@@ -2,13 +2,13 @@
 !pip install unsloth unsloth_zoo
 !pip uninstall unsloth -y && pip install --upgrade --no-cache-dir --no-deps git+https://github.com/unslothai/unsloth.git
 !pip install --upgrade --no-cache-dir --no-deps unsloth_zoo
-
+------------------------------------------------------------------------------------------------------------------------------------------------------
 from unsloth import FastLanguageModel
 import torch
 max_seq_length = 2048 # Choose any! We auto support RoPE Scaling internally!
 dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
 load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False.
-
+---------------------------------------------------------------------------------------------------------------------------------------
 # 4bit pre quantized models we support for 4x faster downloading + no OOMs.
 fourbit_models = [
     "unsloth/Meta-Llama-3.1-8B-bnb-4bit",      # Llama-3.1 15 trillion tokens model 2x faster!
@@ -24,6 +24,7 @@ fourbit_models = [
     "unsloth/gemma-2-9b-bnb-4bit",
     "unsloth/gemma-2-27b-bnb-4bit",            # Gemma 2x faster!
 ] # More models at https://huggingface.co/unsloth
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
 model, tokenizer = FastLanguageModel.from_pretrained(
     # Can select any from the below:
@@ -36,6 +37,7 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     load_in_4bit = load_in_4bit,
     # token = "hf_...", # use one if using gated models like meta-llama/Llama-2-7b-hf
 )
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
 model = FastLanguageModel.get_peft_model(
     model,
@@ -60,6 +62,7 @@ formatted_data = [format_prompt(item) for item in data]
 dataset = Dataset.from_dict({"text": formatted_data}).train_test_split(test_size=0.1, seed=3407)
 dataset = Dataset.from_dict({"text": formatted_data}).train_test_split(test_size=0.1, seed=3407)
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 from trl import SFTTrainer
 from transformers import TrainingArguments
 from unsloth import is_bfloat16_supported
@@ -92,6 +95,7 @@ trainer = SFTTrainer(
     ),
 )
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 from unsloth.chat_templates import train_on_responses_only
 
 trainer = train_on_responses_only(
@@ -100,6 +104,7 @@ trainer = train_on_responses_only(
     response_part = "<|im_start|>assistant\n",
 )
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 #@title Show current memory stats
 gpu_stats = torch.cuda.get_device_properties(0)
 start_gpu_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
@@ -107,8 +112,11 @@ max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
 print(f"GPU = {gpu_stats.name}. Max memory = {max_memory} GB.")
 print(f"{start_gpu_memory} GB of memory reserved.")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
 trainer_stats = trainer.train()
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 #@title Show final memory and time stats
 used_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
 used_memory_for_lora = round(used_memory - start_gpu_memory, 3)
@@ -121,6 +129,7 @@ print(f"Peak reserved memory for training = {used_memory_for_lora} GB.")
 print(f"Peak reserved memory % of max memory = {used_percentage} %.")
 print(f"Peak reserved memory for training % of max memory = {lora_percentage} %.")
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------
 FastLanguageModel.for_inference(model)
 
 messages = [
@@ -138,37 +147,45 @@ from transformers import TextStreamer
 text_streamer = TextStreamer(tokenizer)
 _ = model.generate(input_ids=inputs, streamer=text_streamer, max_new_tokens=256, temperature=0.7, do_sample=True, top_p=0.9)
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------
 model.save_pretrained("lora_model") # Local saving
 tokenizer.save_pretrained("lora_model")
 # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
 # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Merge to 16bit
 if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_16bit",)
 if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_16bit", token = "")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Merge to 4bit
 if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_4bit",)
 if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_4bit", token = "")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Just LoRA adapters
 if False: model.save_pretrained_merged("model", tokenizer, save_method = "lora",)
 if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "lora", token = "")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Save to 8bit Q8_0
 if False: model.save_pretrained_gguf("model", tokenizer,)
 # Remember to go to https://huggingface.co/settings/tokens for a token!
 # And change hf to your username!
 if False: model.push_to_hub_gguf("hf/model", tokenizer, token = "")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Save to 16bit GGUF
 if False: model.save_pretrained_gguf("model", tokenizer, quantization_method = "f16")
 if False: model.push_to_hub_gguf("hf/model", tokenizer, quantization_method = "f16", token = "")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Save to q4_k_m GGUF
 if False: model.save_pretrained_gguf("model", tokenizer, quantization_method = "q4_k_m")
 if False: model.push_to_hub_gguf("hf/model", tokenizer, quantization_method = "q4_k_m", token = "")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 # Save to multiple GGUF options - much faster if you want multiple!
 if False:
     model.push_to_hub_gguf(
@@ -180,6 +197,7 @@ if False:
 
 model.save_pretrained_gguf("gguf_model", tokenizer, quantization_method="q4_k_m")
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 import os
 
 gguf_files = [f for f in os.listdir("gguf_model") if f.endswith(".gguf")]
@@ -192,5 +210,6 @@ if gguf_files:
     files.download(gguf_file)
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 from google.colab import drive
 drive.mount('/content/drive/')
