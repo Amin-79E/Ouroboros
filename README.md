@@ -31,7 +31,6 @@ Paste your code and your traceback, and Ouroboros explains the cause of the prob
    ollama create Ouroboros -f Modelfile
    ```
 
-   Other ChatML-format models (such as Qwen) also work; pick them from the dropdown.
 4. Serve the page from localhost (opening the file directly will not reach Ollama):
 
    ```
