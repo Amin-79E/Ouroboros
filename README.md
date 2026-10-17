@@ -17,15 +17,28 @@ Paste your code and your traceback, and Ouroboros explains the cause of the prob
 
 ## Run it
 
-1. Install Ollama and create the model from the GGUF file. The default model name is `Python_tutor.v1.2`. Other ChatML-format models (such as Qwen) also work; pick them from the dropdown.
-   <!-- Add a link to the GGUF download or a Modelfile here -->
-2. Serve the page from localhost (opening the file directly will not reach Ollama):
+1. Install [Ollama](https://ollama.com).
+2. Download the model file (GGUF) from [Google Drive](https://drive.google.com/drive/folders/1EM6PbvfSRyj3IZQyU9VpYBPedHKP3cHi?usp=drive_link) into a new folder.
+3. In that folder, create a file named `Modelfile` containing one line (use the exact name of the downloaded file):
+
+   ```
+   FROM ./your-model-file.Q4_K_M.gguf
+   ```
+
+   then register the model:
+
+   ```
+   ollama create Ouroboros -f Modelfile
+   ```
+
+   Other ChatML-format models (such as Qwen) also work; pick them from the dropdown.
+4. Serve the page from localhost (opening the file directly will not reach Ollama):
 
    ```
    python -m http.server 8000
    ```
 
-3. Open `http://localhost:8000/Interface.html`.
+5. Open `http://localhost:8000/Interface.html`.
 
 If the status dot is red, check that Ollama is running and that the address in Settings is `http://localhost:11434`.
 
