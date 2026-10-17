@@ -1,47 +1,71 @@
-# Python Debugging LLM Fine-Tuning Experiment
+# Ouroboros: a local Python tutor
 
- A small experiment fine-tuning **Qwen2.5-Coder-7B-Instruct** to act as a Python debugging assistant.
+A single-file chat interface for a **fine-tuned Python debugging model**, running fully on your own machine through [Ollama](https://ollama.com). No server and no API key. Your conversations stay on your machine (the page only loads two fonts from Google Fonts).
 
- ## Goal
+<!-- Add a screenshot or short GIF here: ![Ouroboros UI](docs/screenshot.png) -->
 
- Test whether fine-tuning could improve the model's ability to:
+## What it does
 
- - Identify Python bugs
+Paste your code and your traceback, and Ouroboros explains the cause of the problem before showing a fix.
+
+- Streams answers token by token from a local model
+- Syntax-highlighted code blocks with a **Copy** button
+- Chat history saved in your browser (`localStorage`), with a history panel and new-chat button
+- Model picker populated from your installed Ollama models
+- Settings for Ollama address, temperature, context size and system prompt
+- Tutor behavior set by the system prompt: explain the cause first, ask for the full code and traceback, say so when code is already correct, reply in the student's language
+
+## Run it
+
+1. Install Ollama and create the model from the GGUF file. The default model name is `Python_tutor.v1.2`. Other ChatML-format models (such as Qwen) also work; pick them from the dropdown.
+   <!-- Add a link to the GGUF download or a Modelfile here -->
+2. Serve the page from localhost (opening the file directly will not reach Ollama):
+
+   ```
+   python -m http.server 8000
+   ```
+
+3. Open `http://localhost:8000/Interface.html`.
+
+If the status dot is red, check that Ollama is running and that the address in Settings is `http://localhost:11434`.
+
+## The model: fine-tuning experiment
+
+The tutor runs on **Qwen2.5-Coder-7B-Instruct**, fine-tuned as a Python debugging assistant. The goal was to test whether fine-tuning improves the model's ability to:
+
+- Identify Python bugs
 - Generate corrected code
 - Explain fixes
 - Follow coding requirements
 - Produce clean, copy-pasteable Python
 
- ## Evaluation
+### Evaluation
 
- The fine-tuned model was compared against the original model using a small custom benchmark covering:
+The fine-tuned model was compared with the original on a small custom benchmark covering syntax errors, logic errors, edge cases, Python-specific bugs, requirement-based fixes, and correct code that should **not** be modified.
 
- - Syntax errors
-- Logic errors
-- Edge cases
-- Python-specific bugs
-- Requirement-based fixes
-- Correct code that should **not** be modified
+### Results
 
- ### Results
+- **Modest overall improvement**, not a dramatic jump.
+- The biggest gain was on **requirement-based debugging**, such as finding the second-largest *distinct* number and handling edge cases.
+- Weaknesses found: a tendency to assume correct code contains bugs, and poor initial code formatting.
+- A stronger system prompt fixed most of the formatting and consistency problems **without extra training**. The interface includes an editable system prompt in Settings.
 
- The fine-tuned model showed **modest overall improvement**, rather than a dramatic capability increase.
+### Takeaway
 
- The most notable improvement was on **requirement-based debugging**, where the fine-tuned model correctly handled requirements such as finding the second-largest **distinct** number and handling edge cases.
+Fine-tuning did not make the model dramatically better at basic Python debugging, but it **changed its behavior in useful ways** and showed where better training data could help next.
 
- The experiment also revealed weaknesses in the fine-tune, including a tendency to assume correct code contained bugs and initially poor code formatting.
+| | |
+|---|---|
+| **Base model** | Qwen2.5-Coder-7B-Instruct |
+| **Quantization** | Q4_K_M (GGUF) |
+| **Inference** | Ollama |
+| **Use case** | Python debugging and tutoring |
 
- A stronger system prompt significantly improved the formatting and consistency without additional training.
+## Limitations
 
- ## Takeaway
+- The model cannot run code. It reasons only from the code and output you give it.
+- Code highlighting is Python-only, and the Markdown rendering is basic (paragraphs, lists, bold, inline code, code blocks).
+- 7B models make mistakes. Treat answers as a tutor's hint, not ground truth.
+- The benchmark is small and custom, so the results are indicative, not conclusive.
 
- Fine-tuning did not make the model dramatically better at basic Python debugging, but it **changed its behavior in useful ways** and highlighted where better training data could produce further improvements.
-
- ## Model
-
- - **Base:** Qwen2.5-Coder-7B-Instruct
-- **Quantization:** Q4\_K\_M
-- **Use case:** Python debugging
-- **Inference:** Ollama / GGUF
-
- > This project is primarily an experiment in fine-tuning, evaluation, and analyzing LLM behavior.
+> This project is primarily an experiment in fine-tuning, evaluation, and analyzing LLM behavior.
