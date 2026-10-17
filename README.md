@@ -2,7 +2,8 @@
 
 A single-file chat interface for a **fine-tuned Python debugging model**, running fully on your own machine through [Ollama](https://ollama.com). No server and no API key. Your conversations stay on your machine (the page only loads two fonts from Google Fonts).
 
-<!-- Add a screenshot or short GIF here: ![Ouroboros UI](docs/screenshot.png) -->
+<img width="1910" height="984" alt="image" src="https://github.com/user-attachments/assets/73becf1a-1ebb-4a18-b570-e70ea0664521" />
+
 
 ## What it does
 
